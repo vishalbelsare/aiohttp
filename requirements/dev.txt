@@ -17,7 +17,7 @@ appdirs==1.4.4
     #   -r requirements/lint.txt
     #   black
     #   virtualenv
-async-timeout==4.0.0a3
+async-timeout==4.0.0
     # via -r requirements/base.txt
 asynctest==0.13.0 ; python_version < "3.8"
     # via -r requirements/base.txt
@@ -328,7 +328,7 @@ wait-for-it==2.2.1
     # via -r requirements/dev.in
 webcolors==1.11.1
     # via blockdiag
-yarl==1.7.0
+yarl==1.7.2
     # via -r requirements/base.txt
 zipp==3.6.0
     # via importlib-metadata
