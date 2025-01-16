@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import logging
+from typing import List
 
 from aiohttp import WSCloseCode, web
+
+websockets = web.AppKey("websockets", List[web.WebSocketResponse])
 
 
 async def wshandler(request: web.Request) -> web.WebSocketResponse:
@@ -13,16 +16,16 @@ async def wshandler(request: web.Request) -> web.WebSocketResponse:
 
     await ws.prepare(request)
 
-    request.app["websockets"].append(ws)
+    request.app[websockets].append(ws)
 
     while True:
         msg = await ws.receive()
 
-        if msg.type == web.WSMsgType.TEXT:
+        if msg.type is web.WSMsgType.TEXT:
             await ws.send_str(msg.data)
-        elif msg.type == web.WSMsgType.BINARY:
+        elif msg.type is web.WSMsgType.BINARY:
             await ws.send_bytes(msg.data)
-        elif msg.type == web.WSMsgType.CLOSE:
+        elif msg.type is web.WSMsgType.CLOSE:
             await ws.close()
             break
         else:
@@ -32,8 +35,9 @@ async def wshandler(request: web.Request) -> web.WebSocketResponse:
 
 
 async def on_shutdown(app: web.Application) -> None:
-    for ws in set(app["websockets"]):
-        await ws.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
+    ws_list = app[websockets]
+    for ws in set(ws_list):
+        await ws.close(code=WSCloseCode.GOING_AWAY, message=b"Server shutdown")
 
 
 if __name__ == "__main__":
@@ -42,7 +46,8 @@ if __name__ == "__main__":
     )
 
     app = web.Application()
-    app["websockets"] = []
+    l: List[web.WebSocketResponse] = []
+    app[websockets] = l
     app.router.add_route("GET", "/", wshandler)
     app.on_shutdown.append(on_shutdown)
     try:
